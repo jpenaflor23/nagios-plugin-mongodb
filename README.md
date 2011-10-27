@@ -30,12 +30,17 @@ Edit your commands.cfg and add the following
 <pre><code>
 define command {
     command_name    check_mongodb
-    command_line    $USER1$/nagios-plugin-mongodb/check_mongodb.py -H $HOSTADDRESS$ -A $ARG1$ -P $ARG2$ -W $ARG3$ -C $ARG4$
+    command_line    $USER1$/check_mongo.py -H $HOSTADDRESS$ -A $ARG1$ -P $ARG2$ -W $ARG3$ -C $ARG4$
 }
 
 define command {
     command_name    check_mongodb_database
-    command_line    $USER1$/nagios-plugin-mongodb/check_mongodb.py -H $HOSTADDRESS$ -A $ARG1$ -P $ARG2$ -W $ARG3$ -C $ARG4$ -d $ARG5$
+    command_line    $USER1$/check_mongo.py -H $HOSTADDRESS$ -A $ARG1$ -P $ARG2$ -W $ARG3$ -C $ARG4$ -D
+}
+
+define command {
+    command_name    check_mongodb_target_database
+    command_line    $USER1$/check_mongo.py -H $HOSTADDRESS$ -A $ARG1$ -P $ARG2$ -W $ARG3$ -C $ARG4$ -d $ARG5$ -D
 }
 </code></pre>
 
@@ -185,6 +190,6 @@ define service {
       use                     generic-service
       hostgroup_name          Mongo Servers
       service_description     MongoDB Database size your-database
-      check_command           check_mongodb_database!database_size!27017!300!500!your-database
+      check_command           check_mongodb_target_database!database_size!27017!300!500!your-database
 }
 </code></pre>

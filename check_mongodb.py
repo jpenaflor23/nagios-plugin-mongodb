@@ -16,6 +16,10 @@
 #   - @jbraeuer on github
 #   - Dag Stockstad <dag.stockstad@gmail.com>
 #   - @Andor on github
+# 
+# Changes
+#   -I have added a few modifications. The original setting was not giving out perf-data on our server. Not really sure if I missed any configuration from the Original Code of Mike.
+#
 #
 # USAGE
 #
@@ -108,18 +112,15 @@ def exit_with_general_critical(e):
 def check_connect(host, port, warning, critical, perf_data, user, passwd, conn_time):
     warning = warning or 3
     critical = critical or 6
-    message = "Connection took %i seconds" % conn_time
-    if perf_data:
-        message += " | connection_time=%is;%i;%i" % (conn_time, warning, critical)
 
     if conn_time >= critical:
-        print "CRITICAL - " + message
+        print "CRITICAL - Connection took %is | connectiontime=%is;%i;%i" % (conn_time, conn_time, warning, critical)
         sys.exit(2)
     elif conn_time >= warning:
-        print "WARNING - " + message
+        print "WARNING - Connection took %is | connectiontime=%is;%i;%i" % (conn_time, conn_time, warning, critical)
         sys.exit(1)
 
-    print "OK - " + message
+    print "OK - Connection took %is | connectiontime=%is;%i;%i" % (conn_time, conn_time, warning, critical)
     sys.exit(0)
 
 
@@ -136,19 +137,14 @@ def check_connections(con, warning, critical, perf_data):
         available = float(data['connections']['available'])
 
         used_percent = int(float(current / (available + current)) * 100)
-        message = "%i percent (%i of %i connections) used" % (used_percent, current, current + available)
-        if perf_data:
-            message += " | used_percent=%i%%;%i;%i" % (used_percent, warning, critical)
-            message += " current_connections=%i" % current
-            message += " available_connections=%i" % available
         if used_percent >= critical:
-            print "CRITICAL - " + message
+            print "CRITICAL - %i percent (%i of %i connections) used | used_percent=%i;%i;%i current_connections=%i available_connections=%i"  % (used_percent, current, current + available, used_percent, warning, critical, current, available)
             sys.exit(2)
         elif used_percent >= warning:
-            print "WARNING - " + message
+            print "WARNING - %i percent (%i of %i connections) used | used_percent=%i;%i;%i current_connections=%i available_connections=%i"  % (used_percent, current, current + available, used_percent, warning, critical, current, available)
             sys.exit(1)
         else:
-            print "OK - " + message
+            print "OK - %i percent (%i of %i connections) used | used_percent=%i;%i;%i current_connections=%i available_connections=%i"  % (used_percent, current, current + available, used_percent, warning, critical, current, available)
             sys.exit(0)
 
     except Exception, e:
@@ -205,17 +201,14 @@ def check_rep_lag(con, warning, critical, perf_data):
                 lag = max(lag, replicationLag)
 
         data = data[0:len(data)-1]
-        message = "Max replication lag: %i [%s]" % (lag, data)
-        if perf_data:
-            message += " | max_replication_lag=%is" % lag
         if lag >= critical:
-            print "CRITICAL - " + message
+            print "CRITICAL - Max replication lag: %i [%s] | max_replication_lag=%is" % (lag, data, lag)
             sys.exit(2)
         elif lag >= warning:
-            print "WARNING - " + message
+            print "WARNING - Max replication lag: %i [%s] | max_replication_lag=%is" % (lag, data, lag)
             sys.exit(1)
         else:
-            print "OK - " + message
+            print "OK - Max replication lag: %i [%s] | max_replication_lag=%is" % (lag, data, lag)
             sys.exit(0)
 
     except Exception, e:
@@ -244,19 +237,14 @@ def check_memory(con, warning, critical, perf_data):
         mem_resident = float(data['mem']['resident']) / 1024.0
         mem_virtual = float(data['mem']['mapped']) / 1024.0
         mem_mapped = float(data['mem']['virtual']) / 1024.0
-        message = "Memory Usage: %.2fGB resident, %.2fGB mapped, %.2fGB virtual" % (mem_resident, mem_mapped, mem_virtual)
-        if perf_data:
-            message += " | memory_usage=%.3fGB;%.3f;%.3f" % (mem_resident, warning, critical)
-            message += " memory_mapped=%.3fGB" % mem_mapped
-            message += " memory_virtual=%.3fGB" % mem_virtual
         if mem_resident >= critical:
-            print "CRITICAL - " + message
+            print "CRITICAL - Memory Usage: %.2fGB Resident Memory, %.2fGB Mapped Memory, %.2fGB Virtual Memory | memory_usage=%.3fGB;%.3f;%.3f  memory_mapped=%.3fGB memory_virtual=%.3fGB" % (mem_resident, mem_mapped, mem_virtual, mem_resident, warning, critical, mem_mapped, mem_virtual)
             sys.exit(2)
         elif mem_resident >= warning:
-            print "WARNING - " + message
+            print "WARNING - Memory Usage: %.2fGB Resident Memory, %.2fGB Mapped Memory, %.2fGB Virtual Memory | memory_usage=%.3fGB;%.3f;%.3f  memory_mapped=%.3fGB memory_virtual=%.3fGB" % (mem_resident, mem_mapped, mem_virtual, mem_resident, warning, critical, mem_mapped, mem_virtual)
             sys.exit(1)
         else:
-            print "OK - " + message
+            print "OK - Memory Usage: %.2fGB Resident Memory, %.2fGB Mapped Memory, %.2fGB Virtual Memory | memory_usage=%.3fGB;%.3f;%.3f  memory_mapped=%.3fGB memory_virtual=%.3fGB" % (mem_resident, mem_mapped, mem_virtual, mem_resident, warning, critical, mem_mapped, mem_virtual)
             sys.exit(0)
 
     except Exception, e:
@@ -276,18 +264,15 @@ def check_lock(con, warning, critical, perf_data):
         # calculate percentage
         #
         lock_percentage = float(data['globalLock']['lockTime']) / float(data['globalLock']['totalTime']) * 100
-        message = "Lock Percentage: %.2f%%" % lock_percentage
-        if perf_data:
-            message += " | lock_percentage=%.2f%%;%i;%i" % (lock_percentage, warning, critical)
 
         if lock_percentage >= critical:
-            print "CRITICAL - " + message
+            print "CRITICAL - Lock Percentage: %.2f%% | lock_percentage=%.2f%%;%i;%i" % (lock_percentage, lock_percentage, warning, critical)
             sys.exit(2)
         elif lock_percentage >= warning:
-            print "WARNING - " + message
+            print "WARNING - Lock Percentage: %.2f%% | lock_percentage=%.2f%%;%i;%i" % (lock_percentage, lock_percentage, warning, critical)
             sys.exit(1)
         else:
-            print "OK - " + message
+            print "OK - Lock Percentage: %.2f%% | lock_percentage=%.2f%%;%i;%i" % (lock_percentage, lock_percentage, warning, critical)
             sys.exit(0)
 
 
@@ -315,18 +300,14 @@ def check_flushing(con, warning, critical, avg, perf_data):
             flush_time = float(data['backgroundFlushing']['last_ms'])
             stat_type = "Last"
 
-        message = "%s Flush Time: %.2fms" % (stat_type, flush_time)
-        if perf_data:
-            message += " | %s_flush_time=%.2fms;%.2f;%.2f" % (stat_type.lower(), flush_time, warning, critical)
-
         if flush_time >= critical:
-            print "CRITICAL - " + message
+            print "CRITICAL - %s Flush Time: %.2fms | %s_flush_time=%.2fms;%.2f;%.2f" % (stat_type, flush_time, stat_type.lower(), flush_time, warning, critical)
             sys.exit(2)
         elif flush_time >= warning:
-            print "WARNING - " + message
+            print "WARNING - %s Flush Time: %.2fms | %s_flush_time=%.2fms;%.2f;%.2f" % (stat_type, flush_time, stat_type.lower(), flush_time, warning, critical)
             sys.exit(1)
         else:
-            print "OK - " + message
+            print "OK - %s Flush Time: %.2fms | %s_flush_time=%.2fms;%.2f;%.2f" % (stat_type, flush_time, stat_type.lower(), flush_time, warning, critical)
             sys.exit(0)
 
     except Exception, e:
@@ -353,18 +334,15 @@ def index_miss_ratio(con, warning, critical, perf_data):
                 print "WARNING - Can't get counter from MongoDB"
                 sys.exit(1)
 
-        message = "Miss Ratio: %.2f" % miss_ratio
-        if perf_data:
-            message += " | index_miss_ratio=%.2f;%i;%i" % (miss_ratio, warning, critical)
 
         if miss_ratio >= critical:
-            print "CRITICAL - " + message
+            print "CRITICAL - Miss Ratio: %.2f | index_miss_ratio=%.2f;%i;%i" % (miss_ratio,miss_ratio, warning, critical)
             sys.exit(2)
         elif miss_ratio >= warning:
-            print "WARNING - " + message
+            print "WARNING - Miss Ratio: %.2f | index_miss_ratio=%.2f;%i;%i" % (miss_ratio,miss_ratio, warning, critical)
             sys.exit(1)
         else:
-            print "OK - " + message
+            print "OK - Miss Ratio: %.2f | index_miss_ratio=%.2f;%i;%i" % (miss_ratio,miss_ratio, warning, critical)
             sys.exit(0)
 
     except Exception, e:
@@ -421,13 +399,13 @@ def check_databases(con, warning, critical):
         count = len(data['databases'])
 
         if count >= critical:
-            print "CRITICAL - Number of DBs: %.0f" % count
+            print "CRITICAL - Number of DBs: %.0f | db_count=%.0f" % (count, count)
             sys.exit(2)
         elif count >= warning:
-            print "WARNING - Number of DBs: %.0f" % count
+            print "WARNING - Number of DBs: %.0f | db_count=%.0f" % (count, count)
             sys.exit(1)
         else:
-            print "OK - Number of DBs: %.0f" % count
+            print "OK - Number of DBs: %.0f | db_count=%.0f" % (count, count)
             sys.exit(0)
 
     except Exception, e:
@@ -446,13 +424,13 @@ def check_collections(con, warning, critical):
             count += len(con[dbname].collection_names())
 
         if count >= critical:
-            print "CRITICAL - Number of collections: %.0f" % count
+            print "CRITICAL - Number of collections: %.0f | collections=%.0f" % (count, count)
             sys.exit(2)
         elif count >= warning:
-            print "WARNING - Number of collections: %.0f" % count
+            print "WARNING - Number of collections: %.0f | collections=%.0f" % (count, count)
             sys.exit(1)
         else:
-            print "OK - Number of collections: %.0f" % count
+            print "OK - Number of collections: %.0f | collections=%.0f" % (count, count)
             sys.exit(0)
 
     except Exception, e:
@@ -466,18 +444,15 @@ def check_database_size(con, database, warning, critical, perf_data):
     try:
         data = con[database].command('dbstats')
         storage_size = data['storageSize'] / 1024 / 1024
-        if perf_data:
-            perfdata += " | database_size=%i;%i;%i" % (storage_size, warning, critical)
-            perfdata += " database=%s" %(database)
-
+        
         if storage_size >= critical:
-            print "CRITICAL - Database size: %.0f MB, Database: %s%s" % (storage_size, database, perfdata)
+            print "CRITICAL - Database size: %.0f MB, Database: %s | database_size=%i;%i;%i" % (storage_size, database, storage_size, warning, critical)
             sys.exit(2)
         elif storage_size >= warning:
-            print "WARNING - Database size: %.0f MB, Database: %s%s" % (storage_size, database, perfdata)
+            print "WARNING - Database size: %.0f MB, Database: %s | database_size=%i;%i;%i" % (storage_size, database, storage_size, warning, critical)
             sys.exit(1)
         else:
-            print "OK - Database size: %.0f MB, Database: %s%s" % (storage_size, database, perfdata)
+            print "OK - Database size: %.0f MB, Database: %s | database_size=%i;%i;%i " % (storage_size, database, storage_size, warning, critical)
             sys.exit(0)
     except Exception, e:
         exit_with_general_critical(e)
@@ -488,3 +463,4 @@ def check_database_size(con, database, warning, critical, perf_data):
 #
 if __name__ == "__main__":
     main(sys.argv[1:])
+
